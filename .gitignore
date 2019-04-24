@@ -35,3 +35,9 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+bower_components/
+
+node_modules/
+
+wwwroot/
