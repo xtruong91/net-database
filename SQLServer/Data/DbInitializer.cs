@@ -7,7 +7,7 @@ namespace SQLServer.Data
 {
     public class DbInitializer
     {
-        public static void Initialize(ApplicationContext context)
+        public static void Initialize(BloggingContext context)
         {
             context.Database.EnsureCreated();
 
