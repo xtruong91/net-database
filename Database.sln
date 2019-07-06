@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySQL", "MySQL\MySQL.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer", "SQLServer\SQLServer.csproj", "{D5A3C895-15F7-4D6E-AF53-E4877C492417}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite", "SQLite\SQLite.csproj", "{06D62FD7-EA09-4687-80CB-184882118A71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite", "SQLite\SQLite.csproj", "{06D62FD7-EA09-4687-80CB-184882118A71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Core", "App.Core\App.Core.csproj", "{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{06D62FD7-EA09-4687-80CB-184882118A71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06D62FD7-EA09-4687-80CB-184882118A71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06D62FD7-EA09-4687-80CB-184882118A71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
