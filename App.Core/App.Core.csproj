@@ -8,8 +8,4 @@
         <PackageReference Include="autofac" Version="4.9.2" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="UseCases\" />
-    </ItemGroup>
-
 </Project>

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Interfaces;
 using MongoDB.Models;
-using MongoDB.Services;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MongoDB.Controllers
 {
@@ -9,68 +10,43 @@ namespace MongoDB.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly BookService _bookService;
+        private readonly IBookRepository _bookRepository;
 
-        public BooksController(BookService bookService)
+        public BooksController(IBookRepository bookRepository)
         {
-            _bookService = bookService;
+            _bookRepository = bookRepository;
         }
 
         [HttpGet]
-        public ActionResult<List<Book>> Get()
+        public async Task<IEnumerable<Book>> Get()
         {
-            return _bookService.Get();
+            return await _bookRepository.GetAll();
         }
 
         [HttpGet("{id:length(24)}", Name = "GetBook")]
-        public ActionResult<Book> Get(string id)
+        public async Task<Book> Get(string id)
         {
-            var book = _bookService.Get(id);
-
-            if (book == null)
-            {
-                return NotFound();
-            }
-
+            var book =  await _bookRepository.Get(id);
             return book;
         }
 
         [HttpPost]
-        public ActionResult<Book> Create(Book book)
+        public Task Create(Book book)
         {
-            _bookService.Create(book);
-
-            return CreatedAtRoute("GetBook", new { id = book.Id.ToString() }, book);
+           return  _bookRepository.Create(book);           
         }
 
         [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, Book bookIn)
+        public Task<bool> Update(string id, Book bookIn)
         {
-            var book = _bookService.Get(id);
-
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            _bookService.Update(id, bookIn);
-
-            return NoContent();
+            var book = _bookRepository.Get(id);
+            return _bookRepository.Update(id, bookIn);
         }
 
         [HttpDelete("{id:length(24)}")]
-        public IActionResult Delete(string id)
+        public Task<bool> Delete(string id)
         {
-            var book = _bookService.Get(id);
-
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            _bookService.Remove(book.Id);
-
-            return NoContent();
+            return _bookRepository.Remove(id);
         }
     }
 }
