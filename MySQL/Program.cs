@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace MySQL
 {
@@ -12,6 +13,8 @@ namespace MySQL
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseDefaultServiceProvider(options =>
+                    options.ValidateScopes = false)
                 .UseStartup<Startup>();
     }
 }
