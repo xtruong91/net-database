@@ -155,7 +155,7 @@ namespace AngularApp.Repositories
             }
             catch(Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
