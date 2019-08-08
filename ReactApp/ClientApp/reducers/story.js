@@ -32,3 +32,9 @@ export default _ =>
         },
         getDefaultState()
     )
+
+    [a.toggleLike]: (state) => ({
+        ...state,
+        liked: !state.liked,
+        likesNumber: state.liked ? state.likesNumber - 1 : state.likesNumber + 1
+    })

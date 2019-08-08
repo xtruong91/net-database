@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +17,9 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using ReactApp.Data;
+using ReactApp.Notifications;
 using ReactApp.Services;
+using ReactApp.ViewModels.Mapping;
 
 namespace ReactApp
 {
@@ -57,7 +61,13 @@ namespace ReactApp
 
                 });
 
+            var mappingConfig = new MapperConfiguration(mc => mc.AddProfile(new MappingProfile()));
+            services.AddSingleton(mappingConfig.CreateMapper());
+
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IStoryRepository, StoryRepository>();
+            services.AddScoped<ILikeRepository, LikeRepository>();
+            services.AddScoped<IShareRepository, ShareRepository>();
 
             services.AddSingleton<IAuthService>(
                 new AuthService(
@@ -65,6 +75,7 @@ namespace ReactApp
                     Configuration.GetValue<int>("JWTLifespan")
                     )
                 );
+
             services.AddMvc()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
@@ -72,6 +83,14 @@ namespace ReactApp
                         options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                         options.SerializerSettings.Converters.Add(new StringEnumConverter());
                     });
+
+            services.AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                options.PayloadSerializerSettings.Converters.Add(new StringEnumConverter());
+            });
+
+            services.AddSingleton<IUserIdProvider, UserIdProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,6 +112,10 @@ namespace ReactApp
                            .AllowCredentials());
 
             app.UseAuthentication();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NotificationsHub>("/notifications");
+            });
             app.UseMvc();
         }
     }

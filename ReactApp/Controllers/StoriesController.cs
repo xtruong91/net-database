@@ -1,23 +1,44 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using ReactApp.Data;
 using ReactApp.Models;
+using ReactApp.Notifications;
+using ReactApp.Notifications.Models;
 using ReactApp.ViewModels;
+using ReactApp.ViewModels.Stories;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ReactApp.Controllers
 {
+    [Route("api/[controller]")]
+    [Authorize]
+    [ApiController]
     public class StoriesController : ControllerBase
     {
         IStoryRepository storyRepository;
+        ILikeRepository likeRepository;
+        IUserRepository userRepository;
+        IShareRepository shareRepository;
+        IHubContext<NotificationsHub> hubContext;
+        
         IMapper mapper;
 
-        public StoriesController(IStoryRepository storyRepository, IMapper mapper)
+        public StoriesController(
+                IStoryRepository storyRepository,
+                ILikeRepository likeRepository,
+                IUserRepository userRepository,
+                IShareRepository shareRepository,
+                IHubContext<NotificationsHub> hubContext,
+                IMapper mapper)
         {
             this.storyRepository = storyRepository;
+            this.likeRepository = likeRepository;
+            this.hubContext = hubContext;
+            this.userRepository = userRepository;
+            this.shareRepository = shareRepository;
             this.mapper = mapper;
         }
 
@@ -60,19 +81,19 @@ namespace ReactApp.Controllers
         [HttpPatch("{id}")]
         public ActionResult Patch(string id, [FromBody]UpdateStoryViewModel model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            //if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var ownerId = HttpContext.User.Identity.Name;
-            if (!storyRepository.IsOwner(id, ownerId)) return Forbid("You are not the owner of this story");
+            //var ownerId = HttpContext.User.Identity.Name;
+            //if (!storyRepository.IsOwner(id, ownerId)) return Forbid("You are not the owner of this story");
 
-            var newStory = storyRepository.GetSingle(id);
-            newStory.Title = model.Title;
-            newStory.LastEditTime = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds();
-            newStory.Tags = model.Tags;
-            newStory.Content = model.Content;
+            //var newStory = storyRepository.GetSingle(id);
+            //newStory.Title = model.Title;
+            //newStory.LastEditTime = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds();
+            //newStory.Tags = model.Tags;
+            //newStory.Content = model.Content;
 
-            storyRepository.Update(newStory);
-            storyRepository.Commit();
+            //storyRepository.Update(newStory);
+            //storyRepository.Commit();
 
             return NoContent();
         }
@@ -80,15 +101,15 @@ namespace ReactApp.Controllers
         [HttpPost("{id}/publish")]
         public ActionResult Post(string id)
         {
-            var ownerId = HttpContext.User.Identity.Name;
-            if (!storyRepository.IsOwner(id, ownerId)) return Forbid("You are not the owner of this story");
+            //var ownerId = HttpContext.User.Identity.Name;
+            //if (!storyRepository.IsOwner(id, ownerId)) return Forbid("You are not the owner of this story");
 
-            var newStory = storyRepository.GetSingle(id);
-            newStory.Draft = false;
-            newStory.PublishTime = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds();
+            //var newStory = storyRepository.GetSingle(id);
+            //newStory.Draft = false;
+            //newStory.PublishTime = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds();
 
-            storyRepository.Update(newStory);
-            storyRepository.Commit();
+            //storyRepository.Update(newStory);
+            //storyRepository.Commit();
 
             return NoContent();
         }
@@ -125,6 +146,126 @@ namespace ReactApp.Controllers
             storyRepository.Commit();
 
             return NoContent();
+        }
+
+        [HttpGet()]
+        public ActionResult<StoriesViewModel> GetStories()
+        {
+            var stories = storyRepository.AllIncluding(s => s.Owner);
+            return new StoriesViewModel
+            {
+                Stories = stories.Select(mapper.Map<StoryViewModel>).ToList()
+            };
+        }
+        [HttpPost("{id}/toggleLike")]
+        public ActionResult ToggleLike(string id)
+        {
+            var userId = HttpContext.User.Identity.Name;
+
+            var story = storyRepository.GetSingle(s => s.Id == id, s => s.Likes);
+            if (userId == story.OwnerId) return BadRequest("You can't like your own story");
+
+            var user = userRepository.GetSingle(s => s.Id == userId);
+            var existingLike = story.Likes.Find(l => l.UserId == userId);
+
+            var payload = new LikeRelatedPayload
+            {
+                Username = user.Username,
+                StoryTitle = story.Title
+            };
+
+            if (existingLike == null)
+            {
+                hubContext.Clients.User(story.OwnerId).SendAsync(
+                    "notification",
+                    new Notification<LikeRelatedPayload>
+                    {
+                        NotificationType = NotificationType.LIKE,
+                        Payload = payload
+                    });
+                likeRepository.Add(new Like
+                {
+                    UserId = userId,
+                    StoryId = id
+                });
+            }
+            else
+            {
+                hubContext.Clients.User(story.OwnerId).SendAsync(
+                    "notification",
+                    new Notification<LikeRelatedPayload>
+                    {
+                        NotificationType = NotificationType.UNLIKE,
+                        Payload = payload
+                    });
+                likeRepository.Delete(existingLike);
+            }
+            likeRepository.Commit();
+            return NoContent();
+        }
+
+        [HttpPost("{id}/share")]
+        public ActionResult Share(string id, [FromBody]ShareViewModel model)
+        {
+            var ownerId = HttpContext.User.Identity.Name;
+            if (!storyRepository.IsOwner(id, ownerId)) return Forbid("You are not the owner of this story");
+
+            var userToShare = userRepository.GetSingle(u => u.Username == model.Username);
+            if (userToShare == null)
+            {
+                return BadRequest(new { username = "No user with this name" });
+            }
+            var owner = userRepository.GetSingle(s => s.Id == ownerId);
+            var story = storyRepository.GetSingle(s => s.Id == id, s => s.Shares);
+            if (story.OwnerId == ownerId)
+            {
+                return BadRequest(new { username = "You can't share story with yourself" });
+            }
+
+            var existingShare = story.Shares.Find(l => l.UserId == userToShare.Id);
+            if (existingShare == null)
+            {
+                shareRepository.Add(new Share
+                {
+                    UserId = userToShare.Id,
+                    StoryId = id
+                });
+                shareRepository.Commit();
+                hubContext.Clients.User(userToShare.Id).SendAsync(
+                    "notification",
+                    new Notification<ShareRelatedPayload>
+                    {
+                        NotificationType = NotificationType.SHARE,
+                        Payload = new ShareRelatedPayload
+                        {
+                            Username = owner.Username,
+                            StoryTitle = story.Title
+                        }
+                    }
+                );
+            }
+            return NoContent();
+        }
+
+        [HttpGet("shared")]
+        public ActionResult<SharedDraftsViewModel> GetSharedToYouDrafts()
+        {
+            var userId = HttpContext.User.Identity.Name;
+
+            var stories = shareRepository.StoriesSharedToUser(userId).Where(s => s.Draft);
+            var usernames = stories.Select(s => s.Owner.Username).Distinct().ToList();
+
+            return new SharedDraftsViewModel
+            {
+                UsersDrafts = usernames.Select(username => new UserDrafts
+                {
+                    Username = username,
+                    Drafts = stories
+                        .Where(s => s.Owner.Username == username)
+                        .Select(mapper.Map<DraftViewModel>)
+                        .ToList()
+                }).ToList()
+            };
         }
     }
 }

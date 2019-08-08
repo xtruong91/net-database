@@ -13,9 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite", "SQLite\SQLite.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Core", "App.Core\App.Core.csproj", "{34C4B9EB-06D7-484B-9A9A-3F5D4142D68F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngularApp", "AngularApp\AngularApp.csproj", "{14D0DA0D-BB2D-435C-ABF0-7B8EB6CE943F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AngularApp", "AngularApp\AngularApp.csproj", "{14D0DA0D-BB2D-435C-ABF0-7B8EB6CE943F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactApp", "ReactApp\ReactApp.csproj", "{E2B15E23-1DC1-4FAD-88FD-45110211FEBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactApp", "ReactApp\ReactApp.csproj", "{E2B15E23-1DC1-4FAD-88FD-45110211FEBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactApp.Mocker", "ReactApp.Mocker\ReactApp.Mocker.csproj", "{600653A8-654A-4AFE-8F71-2F816262005D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{E2B15E23-1DC1-4FAD-88FD-45110211FEBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2B15E23-1DC1-4FAD-88FD-45110211FEBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2B15E23-1DC1-4FAD-88FD-45110211FEBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{600653A8-654A-4AFE-8F71-2F816262005D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{600653A8-654A-4AFE-8F71-2F816262005D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{600653A8-654A-4AFE-8F71-2F816262005D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{600653A8-654A-4AFE-8F71-2F816262005D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

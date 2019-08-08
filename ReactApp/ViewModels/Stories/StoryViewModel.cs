@@ -2,12 +2,13 @@
 
 namespace ReactApp.ViewModels
 {
-    public class DraftViewModel
+    public class StoryViewModel
     {
         public string Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public List<string> Tags { get; set; } = new List<string>();
-        public long LastEditTime { get; set; }
+        public long PublishTime { get; set; }
+        public string OwnerUsername { get; set; }
     }
 }

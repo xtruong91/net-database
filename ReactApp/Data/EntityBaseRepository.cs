@@ -1,23 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using ReactApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace ReactApp.Data
 {
     public class EntityBaseRepository<T> : IEntityBaseRepository<T>
-         where T : class, IEntityBase, new()
+         where T : class
     {
-        private BlogContext _context;
+        protected BlogContext _context;
 
         public EntityBaseRepository(BlogContext context)
         {
             _context = context;
         }
+
         public virtual IEnumerable<T> GetAll()
         {
             return _context.Set<T>().AsEnumerable();
@@ -35,11 +34,6 @@ namespace ReactApp.Data
                 query = query.Include(includeProperty);
             }
             return query.AsEnumerable();
-        }
-
-        public T GetSingle(string id)
-        {
-            return _context.Set<T>().FirstOrDefault(x => x.Id == id);
         }
 
         public T GetSingle(Expression<Func<T, bool>> predicate)
