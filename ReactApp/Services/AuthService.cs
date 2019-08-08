@@ -28,7 +28,6 @@ namespace ReactApp.Services
                     new Claim(ClaimTypes.Name, id)
                 }),
                 Expires = expirationTime,
-                // new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
                     SecurityAlgorithms.HmacSha256Signature
